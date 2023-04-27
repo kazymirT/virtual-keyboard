@@ -39,23 +39,29 @@
 }
 
 .btn{
+  background-color: gold;
   height: 50px;
   margin-left: 3px;
   border-radius: 5px;
   margin-bottom: 3px;
   transition: all 0.2s;
 }
+
 .btn:hover{
   background-color: red;
   transition: all 0.2s;
 }
+
 .btn__fun{
-  background-color: black;
+  background-color: blueviolet;
   color: wheat;
 }
 
-.btn__active{
-  background-color: red;
+.btn__active {
+  color: #000;
+  background-color: darkorange; /* Змінюємо фон кнопки */
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2) inset; /* Додаємо тінь */
+  transform: translateY(3px); /* Зсуваємо кнопку вниз на 1 піксель */
 }
 
 .footer__text{
