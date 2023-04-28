@@ -139,7 +139,7 @@ const keysTwo = [
     eventKeyEng: '[', eventKeyEngCaps: '[', eventKeyUaCaps: 'Х', eventKeyUa: 'х', eventShiftKeyEng: '{', eventShiftKeyUa: 'Х', eventCode: 'BracketLeft', size: '1',
   },
   {
-    eventKeyEng: ']', eventKeyEngCaps: ']', eventKeyUaCaps: 'Ї', eventKeyUa: 'ї', eventShiftKeyEng: '}', eventShiftKeyUa: 'Х', eventCode: 'BracketRight', size: '1',
+    eventKeyEng: ']', eventKeyEngCaps: ']', eventKeyUaCaps: 'Ї', eventKeyUa: 'ї', eventShiftKeyEng: '}', eventShiftKeyUa: 'Ї', eventCode: 'BracketRight', size: '1',
   },
   {
     eventKeyEng: '\\', eventKeyEngCaps: '\\', eventKeyUaCaps: '\\', eventKeyUa: '\\', eventShiftKeyEng: '|', eventShiftKeyUa: '/', eventCode: 'Backslash', size: '1.4', class: 'btn__fun',
@@ -258,6 +258,7 @@ const keysFive = [
 ];
 const letters = [...keysOne, ...keysTwo, ...keysThree, ...keysFour, ...keysFive];
 const sectionKeyT = document.querySelector('.section-key');
+const textareaT = document.querySelector('.textarea');
 let capsLock = false;
 let langPage = 'ua';
 
@@ -291,69 +292,147 @@ function createButton(lang) {
 createButton(langPage);
 
 // ДОДАЄ ЧИ ВИДАЛЯЄ КЛАС У BTN .btn__active
-function buttonClick(btnCode, color) {
+// const keydown = [];
+function buttonClickOn(btnCode) {
   const btns = Array.from(sectionKeyT.children);
+
   btns.forEach((i) => {
     if (i.dataset.code === btnCode) {
-      if (color) {
-        i.classList.add('btn__active');
-      } else {
-        i.classList.remove('btn__active');
-      }
+      i.classList.add('btn__active');
+    }
+  });
+}
+function buttonClickOff(btnCode) {
+  const btns = Array.from(sectionKeyT.children);
+
+  btns.forEach((i) => {
+    if (i.dataset.code === btnCode) {
+      i.classList.remove('btn__active');
     }
   });
 }
 // Виводить у caps lock
 function buttonCapsClick() {
   sectionKeyT.innerHTML = ' ';
-
   let arg;
+
   if (capsLock) {
     arg = (langPage === 'ua') ? 'ua' : 'eng';
   } else {
     arg = (langPage === 'ua') ? 'CapsUA' : 'CapsENG';
   }
+
   createButton(arg);
   if (!capsLock) {
-    buttonClick('CapsLock', true);
+    buttonClickOn('CapsLock');
   } else {
-    buttonClick('CapsLock', false);
+    buttonClickOff('CapsLock');
   }
   capsLock = !capsLock;
 }
+
+let isCapsLockPressed = false;
+let isCapsLockKeyDown = false;
 let isAltKeyPressed = false;
 let isShiftKeyPressed = false;
+let langChangeClick = false;
+let isShiftDown = false;
+let isShiftClick = false;
+let shiftAltOne;
+let shiftAltTwo;
 
-document.addEventListener('keydown', (e) => {
-  e.preventDefault();
+const startCapsLock = (event) => {
+  isCapsLockKeyDown = true;
+  isCapsLockPressed = !isCapsLockPressed;
+  buttonCapsClick(event.code);
+};
 
-  if (e.code === 'CapsLock') {
-    buttonCapsClick(e.code);
-    return;
+const startShiftAlt = () => {
+  let langChange = langPage === 'ua' ? 'eng' : 'ua';
+  if (capsLock) {
+    langChange = langChange === 'ua' ? 'CapsUA' : 'CapsENG';
   }
-  buttonClick(e.code, true);
-});
+  if (!langChangeClick) {
+    createButton(langChange);
+    if (isCapsLockPressed) buttonClickOn('CapsLock');
+  }
+  langChangeClick = true;
+  buttonClickOn(shiftAltOne);
+  buttonClickOn(shiftAltTwo);
+};
 
-document.addEventListener('keyup', (e) => {
-  if (e.code === 'CapsLock') return;
-  buttonClick(e.code, false);
-  isAltKeyPressed = false;
-  isShiftKeyPressed = false;
-});
+const startShift = () => {
+  if (isShiftClick) return;
+  isShiftClick = true;
+  isShiftDown = true;
+  let langChange = langPage === 'ua' ? 'ua' : 'eng';
+  if (!capsLock) {
+    langChange = langChange === 'ua' ? 'ShiftUA' : 'ShiftENG';
+  }
+  capsLock = !capsLock;
+  createButton(langChange);
+  if (isCapsLockPressed) buttonClickOn('CapsLock');
+};
+
+const showBtnOfPage = (code) => {
+  const btns = Array.from(sectionKeyT.children);
+  btns.forEach((i) => {
+    if (i.dataset.code === code) {
+      textareaT.value += i.textContent;
+    }
+  });
+};
 // Відстежує натискання Shift+Alt
 document.addEventListener('keydown', (event) => {
-  if (event.code === 'AltLeft' || event.code === 'AltRight') {
-    isAltKeyPressed = true;
+  event.preventDefault();
+
+  if (event.code === 'CapsLock') {
+    if (event.code === 'CapsLock' && !isCapsLockKeyDown) {
+      startCapsLock(event);
+      return;
+    }
+  } else if (event.code === 'AltLeft' || event.code === 'AltRight' || event.code === 'ShiftLeft' || event.code === 'ShiftRight') {
+    if (event.code === 'AltLeft' || event.code === 'AltRight') {
+      isAltKeyPressed = true;
+      shiftAltOne = event.code === 'AltLeft' ? 'AltLeft' : 'AltRight';
+    }
+    if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') {
+      isShiftKeyPressed = true;
+      shiftAltTwo = event.code === 'ShiftLeft' ? 'ShiftLeft' : 'ShiftRight';
+    }
+    if (isAltKeyPressed && isShiftKeyPressed) {
+      startShiftAlt(event);
+      return;
+    }
   }
   if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') {
-    isShiftKeyPressed = true;
+    startShift(event);
+    buttonClickOn(event.code);
+    return;
+  }
+  buttonClickOn(event.code);
+  showBtnOfPage(event.code);
+});
+
+document.addEventListener('keyup', (event) => {
+  event.preventDefault();
+
+  if (event.code === 'CapsLock') {
+    isCapsLockKeyDown = false;
+    return;
+  }
+  // if (isCapsLockPressed) return;
+
+  isAltKeyPressed = false;
+  isShiftKeyPressed = false;
+  langChangeClick = false;
+
+  if (isShiftDown) {
+    isShiftClick = false;
+    startShift();
+    isShiftDown = false;
+    isShiftClick = false;
   }
 
-  if (isAltKeyPressed && isShiftKeyPressed) {
-    let langChange = langPage === 'ua' ? 'eng' : 'ua';
-    if (capsLock) {
-      langChange = langChange === 'ua' ? 'CapsUA' : 'CapsENG';
-    }
-    createButton(langChange);
-  }
+  buttonClickOff(event.code);
 });
