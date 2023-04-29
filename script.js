@@ -25,6 +25,13 @@ class ElementCreator {
   sizeButton(sizeButton) {
     this.element.style.width = `${50 * sizeButton}px`;
   }
+
+  // addEvent() {
+  //   this.element.addEventListener('mousedown', (e) => {
+  //     e.target.classList.add('btn__active');
+  //   });
+  //   this.element.addEventListener('mouseup', eventKeyUp);
+  // }
 }
 const page = document.body;
 page.classList.add('body');
@@ -103,7 +110,7 @@ const keysOne = [
 ];
 const keysTwo = [
   {
-    eventKeyEng: 'Tab', eventKeyEngCaps: 'Tab', eventKeyUaCaps: 'Tab', eventKeyUa: 'Tab', eventShiftKeyEng: 'Tab', eventShiftKeyUa: 'Tab', eventCode: 'Tab', size: '1.4', class: 'btn__fun',
+    eventKeyEng: 'Tab', eventKeyEngCaps: 'Tab', eventKeyUaCaps: 'Tab', eventKeyUa: 'Tab', eventShiftKeyEng: 'Tab', eventShiftKeyUa: 'Tab', eventCode: 'Tab', size: '0.8', class: 'btn__fun',
   },
   {
     eventKeyEng: 'q', eventKeyEngCaps: 'Q', eventKeyUaCaps: 'Й', eventKeyUa: 'й', eventShiftKeyEng: 'Q', eventShiftKeyUa: 'Й', eventCode: 'KeyQ', size: '1',
@@ -142,7 +149,10 @@ const keysTwo = [
     eventKeyEng: ']', eventKeyEngCaps: ']', eventKeyUaCaps: 'Ї', eventKeyUa: 'ї', eventShiftKeyEng: '}', eventShiftKeyUa: 'Ї', eventCode: 'BracketRight', size: '1',
   },
   {
-    eventKeyEng: '\\', eventKeyEngCaps: '\\', eventKeyUaCaps: '\\', eventKeyUa: '\\', eventShiftKeyEng: '|', eventShiftKeyUa: '/', eventCode: 'Backslash', size: '1.4', class: 'btn__fun',
+    eventKeyEng: '\\', eventKeyEngCaps: '\\', eventKeyUaCaps: '\\', eventKeyUa: '\\', eventShiftKeyEng: '|', eventShiftKeyUa: '/', eventCode: 'Backslash', size: '1',
+  },
+  {
+    eventKeyEng: 'Del', eventKeyEngCaps: 'Del', eventKeyUaCaps: 'Del', eventKeyUa: 'Del', eventShiftKeyEng: 'Del', eventShiftKeyUa: 'Del', eventCode: 'Delete', size: '0.95', class: 'btn__fun',
   },
 ];
 const keysThree = [
@@ -238,7 +248,7 @@ const keysFive = [
     eventKeyEng: 'Alt', eventKeyUa: 'Alt', eventShiftKeyEng: 'Alt', eventShiftKeyUa: 'Alt', eventKeyEngCaps: 'Alt', eventKeyUaCaps: 'Alt', eventCode: 'AltLeft', size: '1', class: 'btn__fun',
   },
   {
-    eventKeyEng: '_', eventKeyUa: '_', eventShiftKeyEng: '_', eventShiftKeyUa: '_', eventKeyEngCaps: '_', eventKeyUaCaps: '_', eventCode: 'Space', size: '7.15',
+    eventKeyEng: 'Eng', eventKeyUa: 'Ua', eventShiftKeyEng: 'Eng', eventShiftKeyUa: 'Ua', eventKeyEngCaps: 'Eng', eventKeyUaCaps: 'Ua', eventCode: 'Space', size: '7.15',
   },
   {
     eventKeyEng: 'Alt', eventKeyUa: 'Alt', eventShiftKeyEng: 'Alt', eventShiftKeyUa: 'Alt', eventKeyEngCaps: 'Alt', eventKeyUaCaps: 'Alt', eventCode: 'AltRight', size: '1', class: 'btn__fun',
@@ -284,7 +294,7 @@ function createButton(lang) {
     langPage = (lang === 'eng' || lang === 'ShiftENG' || lang === 'CapsENG') ? 'eng' : 'ua';
     button.element.textContent = buttonLabel;
     button.sizeButton(element.size);
-
+    // button.addEvent();
     button.appendTo(sectionKey.element);
   });
 }
@@ -292,7 +302,6 @@ function createButton(lang) {
 createButton(langPage);
 
 // ДОДАЄ ЧИ ВИДАЛЯЄ КЛАС У BTN .btn__active
-// const keydown = [];
 function buttonClickOn(btnCode) {
   const btns = Array.from(sectionKeyT.children);
 
@@ -382,10 +391,58 @@ const showBtnOfPage = (code) => {
     }
   });
 };
-// Відстежує натискання Shift+Alt
-document.addEventListener('keydown', (event) => {
-  event.preventDefault();
+const startBackspace = () => {
+  const cursorPosition = textareaT.selectionStart;
+  if (cursorPosition === 0) return;
 
+  // отримуємо ліву та праву частину тексту
+  const leftPart = textareaT.value.substring(0, cursorPosition - 1);
+  const rightPart = textareaT.value.substring(cursorPosition);
+  // склеюємо ліву та праву частини тексту
+  textareaT.value = leftPart + rightPart;
+  // переміщуємо курсор на позицію вліво
+  textareaT.selectionStart = cursorPosition - 1;
+  textareaT.selectionEnd = cursorPosition - 1;
+};
+const startDelete = () => {
+  const cursorPosition = textareaT.selectionStart;
+  // отримуємо ліву та праву частину тексту
+  const leftPart = textareaT.value.substring(0, cursorPosition);
+  const rightPart = textareaT.value.substring(cursorPosition + 1);
+  // склеюємо ліву та праву частини тексту
+  textareaT.value = leftPart + rightPart;
+  // переміщуємо курсор на позицію вправо
+  textareaT.selectionStart = cursorPosition;
+  textareaT.selectionEnd = cursorPosition;
+};
+const startEnter = () => {
+  const cursorPosition = textareaT.selectionStart;
+
+  textareaT.value = `${textareaT.value.substring(0, cursorPosition)}\n${textareaT.value.substring(cursorPosition)}`;
+
+  textareaT.selectionStart = cursorPosition + 1;
+  textareaT.selectionEnd = cursorPosition + 1;
+};
+const startSpace = () => {
+  const cursorPosition = textareaT.selectionStart;
+  const leftPart = textareaT.value.substring(0, cursorPosition);
+  const rightPart = textareaT.value.substring(cursorPosition);
+  textareaT.value = `${leftPart} ${rightPart}`;
+  textareaT.selectionStart = cursorPosition + 1;
+  textareaT.selectionEnd = cursorPosition + 1;
+};
+const startTab = () => {
+  const cursorPosition = textareaT.selectionStart;
+  const tabspace = '   ';
+  const leftPart = textareaT.value.substring(0, cursorPosition);
+  const rightPart = textareaT.value.substring(cursorPosition);
+  textareaT.value = `${leftPart}${tabspace}${rightPart}`;
+  textareaT.selectionStart = cursorPosition + 3;
+  textareaT.selectionEnd = cursorPosition + 3;
+};
+const eventKeyDown = (event) => {
+  // console.log(event.code);
+  event.preventDefault();
   if (event.code === 'CapsLock') {
     if (event.code === 'CapsLock' && !isCapsLockKeyDown) {
       startCapsLock(event);
@@ -410,13 +467,50 @@ document.addEventListener('keydown', (event) => {
     buttonClickOn(event.code);
     return;
   }
+  if (event.code === 'Backspace') {
+    startBackspace();
+    buttonClickOn(event.code);
+    return;
+  }
+  if (event.code === 'Delete') {
+    startDelete();
+    buttonClickOn(event.code);
+    return;
+  }
+  if (event.code === 'Enter') {
+    startEnter();
+    buttonClickOn(event.code);
+    return;
+  }
+  if (event.code === 'ControlLeft' || event.code === 'ControlRight') {
+    buttonClickOn(event.code);
+    return;
+  }
+  if (event.code === 'AltLeft' || event.code === 'AltRight') {
+    buttonClickOn(event.code);
+    return;
+  }
+  if (event.code === 'Space') {
+    startSpace();
+    buttonClickOn(event.code);
+    return;
+  }
+  if (event.code === 'Tab') {
+    startTab();
+    buttonClickOn(event.code);
+    return;
+  }
+  if (event.code === 'MetaLeft') {
+    event.preventDefault();
+    buttonClickOn(event.code);
+    return;
+  }
   buttonClickOn(event.code);
   showBtnOfPage(event.code);
-});
-
-document.addEventListener('keyup', (event) => {
+};
+const eventKeyUp = (event) => {
   event.preventDefault();
-
+  console.log(event.code);
   if (event.code === 'CapsLock') {
     isCapsLockKeyDown = false;
     return;
@@ -427,7 +521,7 @@ document.addEventListener('keyup', (event) => {
   isShiftKeyPressed = false;
   langChangeClick = false;
 
-  if (isShiftDown) {
+  if ((event.code === 'ShiftLeft' || event.code === 'ShiftRight') && isShiftDown) {
     isShiftClick = false;
     startShift();
     isShiftDown = false;
@@ -435,4 +529,7 @@ document.addEventListener('keyup', (event) => {
   }
 
   buttonClickOff(event.code);
-});
+};
+
+document.addEventListener('keydown', eventKeyDown);
+document.addEventListener('keyup', eventKeyUp);
