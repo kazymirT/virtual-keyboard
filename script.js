@@ -1,69 +1,3 @@
-class ElementCreator {
-  constructor(tag, classes) {
-    this.element = document.createElement(tag);
-    this.addClasses(classes);
-  }
-
-  addClasses(classes) {
-    if (!classes) return;
-    classes.split(' ').forEach((className) => {
-      this.element.classList.add(className);
-    });
-  }
-
-  addAttributes(attributes) {
-    if (!attributes) return;
-    attributes.forEach(({ name, value }) => {
-      this.element.setAttribute(name, value);
-    });
-  }
-
-  appendTo(parent) {
-    parent.append(this.element);
-  }
-
-  sizeButton(sizeButton) {
-    this.element.style.width = `${50 * sizeButton}px`;
-  }
-
-  // addEvent() {
-  //   this.element.addEventListener('mousedown', (e) => {
-  //     e.target.classList.add('btn__active');
-  //   });
-  //   this.element.addEventListener('mouseup', eventKeyUp);
-  // }
-}
-const page = document.body;
-page.classList.add('body');
-
-const [wrapper, header, main, sectionOutput, textarea, sectionKey, footer] = [
-  new ElementCreator('div', 'wrapper'),
-  new ElementCreator('header', 'header'),
-  new ElementCreator('main', 'main'),
-  new ElementCreator('section', 'section-output'),
-  new ElementCreator('textarea', 'textarea'),
-  new ElementCreator('section', 'section-key'),
-  new ElementCreator('footer', 'footer'),
-];
-
-header.element.innerHTML = '<h1 class="header__title">RSS Віртуальна клавіатура</h1>';
-
-textarea.element.setAttribute('autofocus', true);
-textarea.element.setAttribute('placeholder', 'Уведіть ваш текст...');
-textarea.element.addEventListener('blur', () => {
-  textarea.element.focus();
-});
-textarea.appendTo(sectionOutput.element);
-sectionOutput.appendTo(main.element);
-sectionKey.appendTo(main.element);
-header.appendTo(wrapper.element);
-main.appendTo(wrapper.element);
-
-footer.element.innerHTML = '<p class="footer__text"> Клавіатура створена в операційній системі Windows. Для перемикання мови комбінація: ліві shift + alt</p>';
-footer.appendTo(wrapper.element);
-
-wrapper.appendTo(page);
-
 const keysOne = [
   {
     eventKeyEng: '`', eventKeyEngCaps: '`', eventKeyUaCaps: "'", eventKeyUa: "'", eventShiftKeyEng: '~', eventShiftKeyUa: '₴', eventCode: 'Backquote', size: '0.8',
@@ -267,12 +201,71 @@ const keysFive = [
   },
 ];
 const letters = [...keysOne, ...keysTwo, ...keysThree, ...keysFour, ...keysFive];
+class ElementCreator {
+  constructor(tag, classes) {
+    this.element = document.createElement(tag);
+    this.addClasses(classes);
+  }
+
+  addClasses(classes) {
+    if (!classes) return;
+    classes.split(' ').forEach((className) => {
+      this.element.classList.add(className);
+    });
+  }
+
+  addAttributes(attributes) {
+    if (!attributes) return;
+    attributes.forEach(({ name, value }) => {
+      this.element.setAttribute(name, value);
+    });
+  }
+
+  appendTo(parent) {
+    parent.append(this.element);
+  }
+
+  sizeButton(sizeButton) {
+    this.element.style.width = `${50 * sizeButton}px`;
+  }
+}
+const page = document.body;
+page.classList.add('body');
+
+const [wrapper, header, main, sectionOutput, textarea, sectionKey, footer] = [
+  new ElementCreator('div', 'wrapper'),
+  new ElementCreator('header', 'header'),
+  new ElementCreator('main', 'main'),
+  new ElementCreator('section', 'section-output'),
+  new ElementCreator('textarea', 'textarea'),
+  new ElementCreator('section', 'section-key'),
+  new ElementCreator('footer', 'footer'),
+];
+
+header.element.innerHTML = '<h1 class="header__title">RSS Віртуальна клавіатура</h1>';
+
+textarea.element.setAttribute('autofocus', true);
+textarea.element.setAttribute('placeholder', 'Уведіть ваш текст...');
+textarea.element.addEventListener('blur', () => {
+  textarea.element.focus();
+});
+textarea.appendTo(sectionOutput.element);
+sectionOutput.appendTo(main.element);
+sectionKey.appendTo(main.element);
+header.appendTo(wrapper.element);
+main.appendTo(wrapper.element);
+
+footer.element.innerHTML = '<p class="footer__text"> Клавіатура створена в операційній системі Windows. Для перемикання мови комбінація: ліві shift + alt</p>';
+footer.appendTo(wrapper.element);
+
+wrapper.appendTo(page);
+
 const sectionKeyT = document.querySelector('.section-key');
 const textareaT = document.querySelector('.textarea');
-let capsLock = false;
 let langPage = 'ua';
-
-function createButton(lang) {
+// керує класом ElementCreator
+const createButton = (lang) => {
+  localStorage.setItem('myLang', lang);
   sectionKeyT.innerHTML = ' ';
   letters.forEach((element) => {
     const button = new ElementCreator('button', 'btn');
@@ -288,40 +281,43 @@ function createButton(lang) {
       case 'ShiftENG': buttonLabel = element.eventShiftKeyEng; break;
       case 'CapsENG': buttonLabel = element.eventKeyEngCaps; break;
       case 'CapsUA': buttonLabel = element.eventKeyUaCaps; break;
-      // eslint-disable-next-line no-unused-expressions
-      default: element.eventKeyUa;
+      default: buttonLabel = element.eventKeyUa;
     }
     langPage = (lang === 'eng' || lang === 'ShiftENG' || lang === 'CapsENG') ? 'eng' : 'ua';
     button.element.textContent = buttonLabel;
     button.sizeButton(element.size);
-    // button.addEvent();
     button.appendTo(sectionKey.element);
   });
-}
+};
 // Виводимо кнопки на клавіатуру
-createButton(langPage);
+const localLang = localStorage.getItem('myLang');
+if (localLang) {
+  createButton(localLang);
+} else {
+  createButton(langPage);
+}
 
 // ДОДАЄ ЧИ ВИДАЛЯЄ КЛАС У BTN .btn__active
-function buttonClickOn(btnCode) {
+const buttonClickOffOn = (btnCode, arg) => {
   const btns = Array.from(sectionKeyT.children);
-
   btns.forEach((i) => {
     if (i.dataset.code === btnCode) {
-      i.classList.add('btn__active');
+      if (arg) {
+        i.classList.add('btn__active');
+      } else {
+        i.classList.remove('btn__active');
+      }
     }
   });
-}
-function buttonClickOff(btnCode) {
-  const btns = Array.from(sectionKeyT.children);
+};
 
-  btns.forEach((i) => {
-    if (i.dataset.code === btnCode) {
-      i.classList.remove('btn__active');
-    }
-  });
-}
+let [
+  isCapsLockPressed, isCapsLockKeyDown, isAltKeyPressed, isShiftKeyPressed, langChangeClick,
+  isShiftDown, isShiftClick, shiftAltOne, shiftAltTwo, capsLock,
+] = [false];
+
 // Виводить у caps lock
-function buttonCapsClick() {
+const buttonCapsClick = () => {
   sectionKeyT.innerHTML = ' ';
   let arg;
 
@@ -330,25 +326,15 @@ function buttonCapsClick() {
   } else {
     arg = (langPage === 'ua') ? 'CapsUA' : 'CapsENG';
   }
-
   createButton(arg);
   if (!capsLock) {
-    buttonClickOn('CapsLock');
+    buttonClickOffOn('CapsLock', true);
   } else {
-    buttonClickOff('CapsLock');
+    buttonClickOffOn('CapsLock', false);
   }
   capsLock = !capsLock;
-}
-
-let isCapsLockPressed = false;
-let isCapsLockKeyDown = false;
-let isAltKeyPressed = false;
-let isShiftKeyPressed = false;
-let langChangeClick = false;
-let isShiftDown = false;
-let isShiftClick = false;
-let shiftAltOne;
-let shiftAltTwo;
+  // startMouse();
+};
 
 const startCapsLock = (event) => {
   isCapsLockKeyDown = true;
@@ -363,11 +349,11 @@ const startShiftAlt = () => {
   }
   if (!langChangeClick) {
     createButton(langChange);
-    if (isCapsLockPressed) buttonClickOn('CapsLock');
+    if (isCapsLockPressed) buttonClickOffOn('CapsLock', true);
   }
   langChangeClick = true;
-  buttonClickOn(shiftAltOne);
-  buttonClickOn(shiftAltTwo);
+  buttonClickOffOn(shiftAltOne, true);
+  buttonClickOffOn(shiftAltTwo, true);
 };
 
 const startShift = () => {
@@ -380,14 +366,21 @@ const startShift = () => {
   }
   capsLock = !capsLock;
   createButton(langChange);
-  if (isCapsLockPressed) buttonClickOn('CapsLock');
+  if (isCapsLockPressed) buttonClickOffOn('CapsLock', true);
+  // startMouse();
 };
 
 const showBtnOfPage = (code) => {
+  const cursorPosition = textareaT.selectionStart;
   const btns = Array.from(sectionKeyT.children);
   btns.forEach((i) => {
     if (i.dataset.code === code) {
-      textareaT.value += i.textContent;
+      const text = textareaT.value;
+      const before = text.substring(0, cursorPosition);
+      const after = text.substring(cursorPosition);
+      textareaT.value = `${before}${i.textContent}${after}`;
+      textareaT.selectionStart = cursorPosition + 1;
+      textareaT.selectionEnd = cursorPosition + 1;
     }
   });
 };
@@ -423,26 +416,18 @@ const startEnter = () => {
   textareaT.selectionStart = cursorPosition + 1;
   textareaT.selectionEnd = cursorPosition + 1;
 };
-const startSpace = () => {
+const startSpace = (arg) => {
   const cursorPosition = textareaT.selectionStart;
+  const stepSpace = arg ? '   ' : ' ';
+  const stepPositionCursor = arg ? 3 : 1;
   const leftPart = textareaT.value.substring(0, cursorPosition);
   const rightPart = textareaT.value.substring(cursorPosition);
-  textareaT.value = `${leftPart} ${rightPart}`;
-  textareaT.selectionStart = cursorPosition + 1;
-  textareaT.selectionEnd = cursorPosition + 1;
-};
-const startTab = () => {
-  const cursorPosition = textareaT.selectionStart;
-  const tabspace = '   ';
-  const leftPart = textareaT.value.substring(0, cursorPosition);
-  const rightPart = textareaT.value.substring(cursorPosition);
-  textareaT.value = `${leftPart}${tabspace}${rightPart}`;
-  textareaT.selectionStart = cursorPosition + 3;
-  textareaT.selectionEnd = cursorPosition + 3;
+  textareaT.value = `${leftPart}${stepSpace}${rightPart}`;
+  textareaT.selectionStart = cursorPosition + stepPositionCursor;
+  textareaT.selectionEnd = cursorPosition + stepPositionCursor;
 };
 const eventKeyDown = (event) => {
-  // console.log(event.code);
-  event.preventDefault();
+  if (event.isTrusted) event.preventDefault();
   if (event.code === 'CapsLock') {
     if (event.code === 'CapsLock' && !isCapsLockKeyDown) {
       startCapsLock(event);
@@ -464,59 +449,52 @@ const eventKeyDown = (event) => {
   }
   if (event.code === 'ShiftLeft' || event.code === 'ShiftRight') {
     startShift(event);
-    buttonClickOn(event.code);
+    buttonClickOffOn(event.code, true);
     return;
   }
   if (event.code === 'Backspace') {
     startBackspace();
-    buttonClickOn(event.code);
+    buttonClickOffOn(event.code, true);
     return;
   }
   if (event.code === 'Delete') {
     startDelete();
-    buttonClickOn(event.code);
+    buttonClickOffOn(event.code, true);
     return;
   }
   if (event.code === 'Enter') {
     startEnter();
-    buttonClickOn(event.code);
+    buttonClickOffOn(event.code, true);
     return;
   }
-  if (event.code === 'ControlLeft' || event.code === 'ControlRight') {
-    buttonClickOn(event.code);
+  if (event.code === 'ControlLeft' || event.code === 'ControlRight' || event.code === 'AltLeft' || event.code === 'AltRight') {
+    buttonClickOffOn(event.code, true);
     return;
   }
-  if (event.code === 'AltLeft' || event.code === 'AltRight') {
-    buttonClickOn(event.code);
-    return;
-  }
-  if (event.code === 'Space') {
-    startSpace();
-    buttonClickOn(event.code);
-    return;
-  }
-  if (event.code === 'Tab') {
-    startTab();
-    buttonClickOn(event.code);
+  if (event.code === 'Space' || event.code === 'Tab') {
+    if (event.code === 'Tab') {
+      startSpace(true);
+    } else {
+      startSpace();
+    }
+    buttonClickOffOn(event.code, true);
     return;
   }
   if (event.code === 'MetaLeft') {
     event.preventDefault();
-    buttonClickOn(event.code);
+    buttonClickOffOn(event.code, true);
     return;
   }
-  buttonClickOn(event.code);
+  buttonClickOffOn(event.code, true);
+  if (event.code === 'CapsLock') return;
   showBtnOfPage(event.code);
 };
 const eventKeyUp = (event) => {
-  event.preventDefault();
-  console.log(event.code);
+  if (event.isTrusted) event.preventDefault();
   if (event.code === 'CapsLock') {
     isCapsLockKeyDown = false;
     return;
   }
-  // if (isCapsLockPressed) return;
-
   isAltKeyPressed = false;
   isShiftKeyPressed = false;
   langChangeClick = false;
@@ -528,8 +506,19 @@ const eventKeyUp = (event) => {
     isShiftClick = false;
   }
 
-  buttonClickOff(event.code);
+  buttonClickOffOn(event.code, false);
 };
-
+const startMouse = () => {
+  const btns = Array.from(sectionKeyT.children);
+  btns.forEach((e) => {
+    e.addEventListener('mousedown', (event) => {
+      eventKeyDown(event.target.dataset);
+    });
+    e.addEventListener('mouseup', (event) => {
+      eventKeyUp(event.target.dataset);
+    });
+  });
+};
+startMouse();
 document.addEventListener('keydown', eventKeyDown);
 document.addEventListener('keyup', eventKeyUp);
