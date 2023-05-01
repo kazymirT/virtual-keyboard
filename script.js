@@ -83,7 +83,7 @@ const keysTwo = [
     eventGenEng: ']', eventKeyUa: 'ї', eventShiftKeyEng: '}', eventShiftKeyUa: 'Ї', eventCode: 'BracketRight', size: '1',
   },
   {
-    eventGen: '\\', eventGenEng: '|', eventGenUa: '/', eventCode: 'Backslash', size: '1',
+    eventGen: '\\', eventGenEng: '|', eventGenUa: '/', eventShiftEng1: '|', eventShiftUa1: '/', eventCode: 'Backslash', size: '1',
   },
   {
     eventGen: 'Del', eventCode: 'Delete', size: '0.95', class: 'btn__fun',
@@ -162,7 +162,7 @@ const keysFour = [
     eventGenEng: '.', eventKeyUa: 'ю', eventShiftKeyEng: '>', eventShiftKeyUa: 'Ю', eventCode: 'Period', size: '1',
   },
   {
-    eventGenEng: '/', eventKeyUa: '.', eventCapsUa: '.', eventShiftKeyEng: '?', eventShiftKeyUa: ',', eventCode: 'Slash', size: '1',
+    eventGenEng: '/', eventKeyUa: '.', eventCapsUa: '.', eventShiftUa: ',', eventShiftKeyEng: '?', eventShiftKeyUa: ',', eventCode: 'Slash', size: '1',
   },
   {
     eventGen: '▲', eventCode: 'ArrowUp', size: '1', class: 'btn__fun',
@@ -233,7 +233,6 @@ main.append(sectionOutput, sectionKey);
 footer.innerHTML = '<p class="footer__text">The keyboard was created in the Windows operating system. To switch the language, use the combination: shift + alt</p>';
 wrapper.append(header, main, footer);
 page.append(wrapper);
-
 const showButton = (btn, lang) => {
   sectionKey.innerHTML = ' ';
   let buttonLabel;
@@ -250,22 +249,28 @@ const showButton = (btn, lang) => {
     default: buttonLabel = 'eventKeyUa';
   }
   const gen = 'eventGen';
+  const shiftUA = 'eventShiftUa';
   let capsGen = false;
   langPage = (lang === 'eng' || lang === 'ShiftENG' || lang === 'CapsENG') ? 'eng' : 'ua';
   capsGen = (langPage === 'ua') ? 'eventCapsUa' : false;
   const genLang = (langPage === 'ua') ? 'eventGenUa' : 'eventGenEng';
+  const genShift = (langPage === 'ua') ? 'eventShiftKeyUa' : 'eventShiftKeyEng';
+  const shift1 = (langPage === 'ua') ? 'eventShiftUa1' : 'eventShiftEng1';
   btn.forEach((e) => {
     const btnK = document.createElement('button');
     let x = (e[buttonLabel] || e[gen] || e[genLang]);
     if (isCapsLockPressed) {
       x = (e[gen] || e[capsGen] || e[genLang] || e[buttonLabel]);
     }
-    if (lang === 'ShiftUA' || lang === 'ShiftENG') {
+    if (isShiftKeyPressed) {
       if (!capsLock) {
-        x = (e[buttonLabel]);
+        x = (e[shift1] || e[buttonLabel] || e[genLang]);
       } else {
-        x = (e[buttonLabel] || e[genLang] || e[gen]);
+        x = (e[shift1] || e[buttonLabel] || e[genLang] || e[gen]);
       }
+    }
+    if (isCapsLockPressed && isShiftKeyPressed) {
+      x = (e[shiftUA] || e[buttonLabel] || e[genShift] || e[genLang] || e[gen] || e[capsGen]);
     }
     btnK.textContent = x;
     btnK.classList.add('btn__number');
@@ -281,13 +286,13 @@ const showButton = (btn, lang) => {
 
 class StartEvents {
   constructor(element) {
-    this.btns = Array.from(element.children);
+    this.btn = Array.from(element.children);
     this.cursorPosition = textarea.selectionStart;
   }
 
   buttonActive(btnCode, arg) {
-    this.btns = Array.from(sectionKey.children);
-    this.btns.forEach((i) => {
+    this.btn = Array.from(sectionKey.children);
+    this.btn.forEach((i) => {
       if (i.dataset.code === btnCode) {
         if (arg) {
           i.classList.add('btn__active');
@@ -296,11 +301,11 @@ class StartEvents {
         }
       }
     });
-  }// Додає чи видаляє клас у btn .btn__active
+  }
 
   showBtnOfPage(btnCode) {
     this.cursorPosition = textarea.selectionStart;
-    this.btns.forEach((i) => {
+    this.btn.forEach((i) => {
       if (i.dataset.code === btnCode) {
         const text = textarea.value;
         const before = text.substring(0, this.cursorPosition);
@@ -310,7 +315,7 @@ class StartEvents {
         textarea.selectionEnd = this.cursorPosition + 1;
       }
     });
-  }// Виводить символи в textarea
+  }
 
   eventSpace(arg) {
     this.cursorPosition = textarea.selectionStart;
@@ -321,7 +326,7 @@ class StartEvents {
     textarea.value = `${leftPart}${stepSpace}${rightPart}`;
     textarea.selectionStart = this.cursorPosition + stepPositionCursor;
     textarea.selectionEnd = this.cursorPosition + stepPositionCursor;
-  }// Додає пробіл чи таб
+  }
 
   eventCapsLock() {
     isCapsLockKeyDown = true;
@@ -357,7 +362,7 @@ class StartEvents {
     langChangeClick = true;
     this.buttonActive(shiftAltOne, true);
     this.buttonActive(shiftAltTwo, true);
-  }// Перемикає клавіатуру
+  }
 
   eventShift() {
     if (isShiftClick) return;
@@ -366,7 +371,7 @@ class StartEvents {
     isShiftDown = true;
     let langChange = langPage === 'ua' ? 'ua' : 'eng';
     if (!capsLock) {
-      langChange = langChange === 'ua' ? 'ShiftUA' : 'ShiftENG';
+      langChange = langChange === 'ua' ? 'CapsUA' : 'CapsENG';
     }
     capsLock = !capsLock;
     showButton(letters, langChange);
@@ -404,8 +409,8 @@ class StartEvents {
   }
 
   startMouse() {
-    this.btns = Array.from(sectionKey.children);
-    this.btns.forEach((e) => {
+    this.btn = Array.from(sectionKey.children);
+    this.btn.forEach((e) => {
       e.addEventListener('mousedown', (event) => {
         this.eventKeyDown(event.target.dataset);
       });
@@ -433,6 +438,7 @@ class StartEvents {
       }
       if (isAltKeyPressed && isShiftKeyPressed) {
         if (langChangeClick) return;
+        this.eventShift(event);
         this.eventShiftAlt();
         return;
       }
